@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+		    "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+		    "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+	
+	<!-- 支持国际化输出 -->
+	<constant name="struts.custom.i18n.resources" value="mess" />
+	
+	<constant name="struts.ui.theme" value="simple" />
+	<constant name="struts.enable.DynamicMethodInvocation" value="true" />
+	<!--配置struts的action受Spring管理-->
+	<constant name="struts.objectFactory" value="spring"/>
+	
+	<!-- 设置允许最大值  50MB(1024*1024*20) -->
+	<constant name="struts.multipart.maxSize" value="50971520" />
+	
+	
+	
+	<package name="user" extends="struts-default">
+		<global-allowed-methods>regex:.*</global-allowed-methods>
+		<!-- 首页界面 -->
+		<action name="index_form" class="userAction" method="indexForm">
+			<result>/WEB-INF/content/jsp/index.jsp</result>
+		</action>
+		<!-- 登录界面 -->
+		<action name="login_form" class="userAction" method="loginForm">
+			<result>/WEB-INF/content/jsp/user/login.jsp</result>
+		</action>
+		<!-- 注册界面 -->
+		<action name="register_form" class="userAction" method="registerForm">
+			<result>/WEB-INF/content/jsp/user/register.jsp</result>
+		</action>
+		<!-- 登录 -->
+		<action name="login_user" class="userAction" method="loginUser">
+            <result name="success" type="chain">index_form</result>
+           	<result name="input" type="chain">login_form</result>
+        </action>
+		<!-- 注册 -->
+		<action name="add_user" class="userAction" method="addUser">
+            <result name="success" type="chain">register_form</result>
+        </action>
+        <action name="loginout_user" class="userAction" method="loginoutUser">
+        	<result name="success" type="redirectAction">index_form</result>
+        </action>
+	</package>
+	
+	<package name="movie" extends="struts-default">
+		
+		<!-- 定义拦截器栈 -->
+		<interceptors>
+			<interceptor name="isUpload" class="com.jason.interceptors.IsUploadInterceptors" />
+			<interceptor-stack name="myStack">
+				<interceptor-ref name="defaultStack"/>
+				<interceptor-ref name="isUpload">
+					<!-- 此方法不需要拦截 -->
+					<!-- <param name="excludeMethods">userLoginForm,userLogin</param> -->
+					<!-- 此方法需要拦截 -->
+					<param name="includeMethods">uploadFileForm,playForm</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<!-- 播放页面 -->
+		<action name="play_form" class="movieAction" method="playForm">
+			<interceptor-ref name="myStack"></interceptor-ref>
+			<result name="success">/WEB-INF/content/jsp/movie/play.jsp</result>
+			<result name="input" type="redirectAction">login_form</result>
+		</action>
+		<!-- 上传页面 -->
+		<action name="uploadFile_form" class="movieAction" method="uploadFileForm">
+			<interceptor-ref name="myStack" />
+			<result name="success">/WEB-INF/content/jsp/movie/uploadFileForm.jsp</result>
+			<result name="input" type="chain" >login_form</result>
+		</action>
+		<!-- 搜索界面 -->
+		<action name="searchForm" class="movieAction" method="searchForm">
+			<result>/WEB-INF/content/jsp/movie/search.jsp</result>
+		</action>
+		<!-- 搜索 -->
+		<action name="searchResult" class="movieAction" method="search">
+			<result>/WEB-INF/content/jsp/movie/searchResult.jsp</result>
+		</action>
+		<!-- 上传 -->
+		<action name="upload_file" class="movieAction" method="uploadFile">
+			<interceptor-ref name="fileUpload">
+				<!-- 配置允许上传文件类型 -->
+				<!-- <param name="allowedTypes">image/png,image/gif,image/jpeg,text/plain</param> -->
+				<!-- 配置允许上传文件的大小 -->
+				<!-- 允许后缀名为png,bmp,jpg,doc,xls的文件上传 -->     
+				<param name="allowedExtensions">  
+				    png,gif,jpg,mp4,jpeg,flv  
+				</param>
+				<param name="maximumSize">11990000</param>
+			</interceptor-ref>
+			<interceptor-ref name="defaultStack" />
+			<result name="success">/WEB-INF/content/jsp/movie/uploadFileForm.jsp</result>
+			<result name="input" >/WEB-INF/content/jsp/movie/uploadFileForm.jsp</result>
+		</action>
+	</package>
+	
+	<!-- 电影 -->
+	<package name="film" extends="struts-default">
+		<!-- 主页电影栏目 -->
+		<action name="indexFilm" class="filmAction" method="filmRefresh">
+			<result>/WEB-INF/content/jsp/indexFilm.jsp</result>
+		</action> 
+		<!-- 电影栏目 -->
+		<action name="film_form" class="filmAction" method="filmForm">
+			<result>/WEB-INF/content/jsp/film/film.jsp</result>
+		</action>
+		<!-- 显示电影栏目 -->
+		<action name="film_result" class="filmAction" method="filmFormResult">
+			<result>/WEB-INF/content/jsp/film/filmResult.jsp</result>
+		</action>
+	</package>
+	
+	<package name="comment" extends="struts-default">
+		<!-- 评论界面 -->
+		<action name="commentForm" class="commentAction" method="commentForm">
+			<result name="success">/WEB-INF/content/jsp/movie/comment.jsp</result>
+		</action>
+		<action name="insert_comment" class="commentAction" method="doComment">
+			<result name="success" type="chain">commentForm</result>
+			<result name="input">/WEB-INF/content/jsp/movie/comment.jsp</result>
+		</action>
+	</package>
+	
+	<!-- 动漫 -->
+	<package name="cartoon" extends="struts-default">
+		<!-- 主页电影栏目 -->
+		<action name="indexCartoon" class="cartoonAction" method="cartoonRefresh">
+			<result>/WEB-INF/content/jsp/indexCartoon.jsp</result>
+		</action> 
+		<!-- 动漫栏目 -->
+		<action name="cartoon_form" class="cartoonAction" method="cartoonForm">
+			<result>/WEB-INF/content/jsp/cartoon/cartoon.jsp</result>
+		</action>
+		<!-- 显示动漫栏目 -->
+		<action name="cartoon_result" class="cartoonAction" method="cartoonFormResult">
+			<result>/WEB-INF/content/jsp/cartoon/cartoonResult.jsp</result>
+		</action>
+		<action name="indexCartoonRanking" class="cartoonAction" method="cartoonIndexRanking">
+			<result>/WEB-INF/content/jsp/indexCartoonRanking.jsp</result>
+		</action>
+	</package>
+	
+	<!-- MTV -->
+	<package name="mtv" extends="struts-default">
+		<!-- 主页显示的MTV -->
+		<action  name="mtv_refresh" class="mtvAction" method="mvtRefresh">
+			<result>/WEB-INF/content/jsp/indexMTV.jsp</result>
+		</action>
+		<!-- mtv栏目 -->
+		<action name="mtv_form" class="mtvAction" method="mtvForm">
+			<result>/WEB-INF/content/jsp/mtv/mtv.jsp</result>
+		</action>
+		<!-- mtv栏目结果显示 -->
+		<action name="mtv_result" class="mtvAction" method="mtvFormResult">
+			<result>/WEB-INF/content/jsp/mtv/mtvResult.jsp</result>
+		</action>
+		<!-- mtv首页排行榜显示 -->
+		<action name="mtv_ranking" class="mtvAction" method="mtvIndexRanking">
+			<result>/WEB-INF/content/jsp/indexMTVRanking.jsp</result>
+		</action>
+	</package>
+	
+	<!-- Ajax -->
+	<package name="json" extends="json-default">
+		<action name="film_refresh" class="filmAction" method="filmRefresh">
+			<interceptor-ref name="defaultStack" />
+			<interceptor-ref name="json" />
+			<result type="json">
+				<param name="noCache">true</param>
+				<param name="contentType">text/json</param>
+			</result>
+		</action>
+		<action name="do_like" class="movieAction" method="doLike">
+			<interceptor-ref name="defaultStack" />
+			<interceptor-ref name="json" />
+			<result type="json">
+				<param name="noCache">true</param>
+				<param name="contentType">text/json</param>
+			</result>
+		</action>
+	</package>
+</struts>
